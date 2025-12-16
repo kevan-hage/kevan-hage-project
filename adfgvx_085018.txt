@@ -1,0 +1,136 @@
+import java.util.*;
+
+public class ADFGVXCipher {
+
+    private static final char[] SYMBOLS = {'A','D','F','G','V','X'};
+    private static final String ALPHANUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private char[][] square = new char[6][6];
+    private Map<Character, String> encodeMap = new HashMap<>();
+    private Map<String, Character> decodeMap = new HashMap<>();
+
+    public ADFGVXCipher(String keySquare) {
+        if(keySquare.length() != 36) throw new IllegalArgumentException("Key square must have 36 characters.");
+        int index = 0;
+        for(int i = 0; i < 6; i++){
+            for(int j = 0; j < 6; j++){
+                char c = keySquare.charAt(index++);
+                square[i][j] = c;
+                String code = "" + SYMBOLS[i] + SYMBOLS[j];
+                encodeMap.put(c, code);
+                decodeMap.put(code, c);
+            }
+        }
+    }
+
+    // Step 1: Polybius square encryption
+    private String polybiusEncrypt(String text){
+        text = text.toUpperCase().replaceAll("[^A-Z0-9]", "");
+        StringBuilder sb = new StringBuilder();
+        for(char c : text.toCharArray()){
+            sb.append(encodeMap.get(c));
+        }
+        return sb.toString();
+    }
+
+    // Step 1: Polybius square decryption
+    private String polybiusDecrypt(String text){
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < text.length(); i += 2){
+            String pair = text.substring(i, i+2);
+            sb.append(decodeMap.get(pair));
+        }
+        return sb.toString();
+    }
+
+    // Step 2: Columnar transposition encryption
+    private String columnarEncrypt(String text, String key){
+        key = key.toUpperCase().replaceAll("[^A-Z]", "");
+        int nCols = key.length();
+        int nRows = (int)Math.ceil((double)text.length()/nCols);
+        char[][] table = new char[nRows][nCols];
+
+        // Fill table row by row
+        int k = 0;
+        for(int i = 0; i < nRows; i++){
+            for(int j = 0; j < nCols; j++){
+                table[i][j] = (k < text.length()) ? text.charAt(k++) : 'X';
+            }
+        }
+
+        // Determine order of columns
+        Character[] keyArr = new Character[nCols];
+        for(int i=0;i<nCols;i++) keyArr[i] = key.charAt(i);
+        Integer[] indices = new Integer[nCols];
+        for(int i=0;i<nCols;i++) indices[i]=i;
+        Arrays.sort(indices, Comparator.comparingInt(a -> keyArr[a]));
+
+        // Read columns in order
+        StringBuilder sb = new StringBuilder();
+        for(int idx : indices){
+            for(int i=0;i<nRows;i++) sb.append(table[i][idx]);
+        }
+        return sb.toString();
+    }
+
+    // Step 2: Columnar transposition decryption
+    private String columnarDecrypt(String text, String key){
+        key = key.toUpperCase().replaceAll("[^A-Z]", "");
+        int nCols = key.length();
+        int nRows = (int)Math.ceil((double)text.length()/nCols);
+
+        char[][] table = new char[nRows][nCols];
+
+        Character[] keyArr = new Character[nCols];
+        for(int i=0;i<nCols;i++) keyArr[i] = key.charAt(i);
+        Integer[] indices = new Integer[nCols];
+        for(int i=0;i<nCols;i++) indices[i]=i;
+        Arrays.sort(indices, Comparator.comparingInt(a -> keyArr[a]));
+
+        int k = 0;
+        for(int idx : indices){
+            for(int i=0;i<nRows;i++){
+                if(k < text.length()) table[i][idx] = text.charAt(k++);
+                else table[i][idx] = 'X';
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for(int i=0;i<nRows;i++){
+            for(int j=0;j<nCols;j++){
+                sb.append(table[i][j]);
+            }
+        }
+        return sb.toString();
+    }
+
+    public String encrypt(String plaintext, String key){
+        String poly = polybiusEncrypt(plaintext);
+        return columnarEncrypt(poly, key);
+    }
+
+    public String decrypt(String ciphertext, String key){
+        String col = columnarDecrypt(ciphertext, key);
+        return polybiusDecrypt(col);
+    }
+
+    public static void main(String[] args){
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("Enter 36-character key square (A-Z and 0-9):");
+        String keySquare = sc.nextLine();
+
+        System.out.println("Enter columnar key:");
+        String colKey = sc.nextLine();
+
+        ADFGVXCipher cipher = new ADFGVXCipher(keySquare);
+
+        System.out.println("Enter plaintext:");
+        String plaintext = sc.nextLine();
+
+        String encrypted = cipher.encrypt(plaintext, colKey);
+        System.out.println("Encrypted: " + encrypted);
+
+        String decrypted = cipher.decrypt(encrypted, colKey);
+        System.out.println("Decrypted: " + decrypted);
+    }
+}

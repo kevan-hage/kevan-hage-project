@@ -1,0 +1,58 @@
+import java.util.Scanner;
+
+public class AdditiveCipher {
+
+// Encrypt a text using Additive (Caesar) Cipher
+public static String encrypt(String text, int key) {
+StringBuilder result = new StringBuilder();
+key = key % 26; // Normalize key
+
+for (char c : text.toCharArray()) {
+if (Character.isUpperCase(c)) {
+char encrypted = (char) ((c - 'A' + key + 26) % 26 + 'A');
+result.append(encrypted);
+}
+else if (Character.isLowerCase(c)) {
+char encrypted = (char) ((c - 'a' + key + 26) % 26 + 'a');
+result.append(encrypted);
+}
+else {
+// Leave non-alphabet characters unchanged
+result.append(c);
+}
+}
+return result.toString();
+}
+
+// Decrypt a text by reversing the shift
+public static String decrypt(String text, int key) {
+return encrypt(text, -key);
+}
+
+public static void main(String[] args) {
+Scanner scanner = new Scanner(System.in);
+
+System.out.println("Additive Cipher (Caesar Cipher)");
+System.out.print("Enter text: ");
+String text = scanner.nextLine();
+
+System.out.print("Enter key (number): ");
+int key = scanner.nextInt();
+
+System.out.println("\nChoose an option:");
+System.out.println("1. Encrypt");
+System.out.println("2. Decrypt");
+System.out.print("Option: ");
+int choice = scanner.nextInt();
+
+if (choice == 1) {
+System.out.println("\nEncrypted text: " + encrypt(text, key));
+} else if (choice == 2) {
+System.out.println("\nDecrypted text: " + decrypt(text, key));
+} else {
+System.out.println("Invalid choice!");
+}
+
+scanner.close();
+}
+}

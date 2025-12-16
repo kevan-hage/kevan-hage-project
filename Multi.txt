@@ -1,0 +1,75 @@
+import java.util.Scanner;
+
+public class MultiplicativeCipher {
+
+public static int modInverse(int a, int m) {
+for (int x = 1; x < m; x++) {
+if ((a * x) % m == 1) {
+return x;
+}
+}
+return -1;
+}
+
+public static String encrypt(String text, int key) {
+StringBuilder encrypted = new StringBuilder();
+for (int i = 0; i < text.length(); i++) {
+char c = text.charAt(i);
+if (Character.isLetter(c)) {
+int base = Character.isLowerCase(c) ? 'a' : 'A';
+int charValue = c - base;
+charValue = (charValue * key) % 26;
+c = (char) (charValue + base);
+}
+encrypted.append(c);
+}
+return encrypted.toString();
+}
+
+public static String decrypt(String text, int key) {
+StringBuilder decrypted = new StringBuilder();
+int keyInverse = modInverse(key, 26);
+if (keyInverse == -1) {
+return "Invalid key for decryption!";
+}
+
+for (int i = 0; i < text.length(); i++) {
+char c = text.charAt(i);
+if (Character.isLetter(c)) {
+int base = Character.isLowerCase(c) ? 'a' : 'A';
+int charValue = c - base;
+charValue = (charValue * keyInverse) % 26;
+c = (char) (charValue + base);
+}
+decrypted.append(c);
+}
+return decrypted.toString();
+}
+
+public static void main(String[] args) {
+Scanner scanner = new Scanner(System.in);
+
+System.out.print("Enter text (for encryption or decryption): ");
+String text = scanner.nextLine();
+
+System.out.print("Enter the key (an integer that is coprime with 26): ");
+int key = scanner.nextInt();
+
+scanner.nextLine();
+System.out.print("Do you want to encrypt (E) or decrypt (D)? ");
+char choice = scanner.nextLine().charAt(0);
+
+if (choice == 'E' || choice == 'e') {
+String encryptedText = encrypt(text, key);
+System.out.println("Encrypted text: " + encryptedText);
+}
+else if (choice == 'D' || choice == 'd') {
+String decryptedText = decrypt(text, key);
+System.out.println("Decrypted text: " + decryptedText);
+} else {
+System.out.println("Invalid choice. Please select 'E' for encryption or 'D' for decryption.");
+}
+
+scanner.close();
+}
+}
