@@ -1,0 +1,77 @@
+import java.util.Scanner;
+
+public class AffineCipher {
+
+public static int modInverse(int a, int m) {
+for (int x = 1; x < m; x++) {
+if ((a * x) % m == 1) {
+return x;
+}
+}
+return -1;
+}
+
+public static String encrypt(String text, int a, int b) {
+StringBuilder encrypted = new StringBuilder();
+for (int i = 0; i < text.length(); i++) {
+char c = text.charAt(i);
+if (Character.isLetter(c)) {
+int base = Character.isLowerCase(c) ? 'a' : 'A';
+int charValue = c - base;
+charValue = (a * charValue + b) % 26;
+c = (char) (charValue + base);
+}
+encrypted.append(c);
+}
+return encrypted.toString();
+}
+
+public static String decrypt(String text, int a, int b) {
+StringBuilder decrypted = new StringBuilder();
+int aInverse = modInverse(a, 26);
+if (aInverse == -1) {
+return "Invalid 'a' value for decryption!";
+}
+
+for (int i = 0; i < text.length(); i++) {
+char c = text.charAt(i);
+if (Character.isLetter(c)) {
+int base = Character.isLowerCase(c) ? 'a' : 'A';
+int charValue = c - base;
+charValue = (aInverse * (charValue - b + 26)) % 26;
+c = (char) (charValue + base);
+}
+decrypted.append(c);
+}
+return decrypted.toString();
+}
+
+public static void main(String[] args) {
+Scanner scanner = new Scanner(System.in);
+
+System.out.print("Enter text (for encryption or decryption): ");
+String text = scanner.nextLine();
+
+System.out.print("Enter key 'a' (should be coprime with 26): ");
+int a = scanner.nextInt();
+System.out.print("Enter key 'b': ");
+int b = scanner.nextInt();
+
+scanner.nextLine();
+System.out.print("Do you want to encrypt (E) or decrypt (D)? ");
+char choice = scanner.nextLine().charAt(0);
+
+if (choice == 'E' || choice == 'e') {
+String encryptedText = encrypt(text, a, b);
+System.out.println("Encrypted text: " + encryptedText);
+}
+else if (choice == 'D' || choice == 'd') {
+String decryptedText = decrypt(text, a, b);
+System.out.println("Decrypted text: " + decryptedText);
+} else {
+System.out.println("Invalid choice. Please select 'E' for encryption or 'D' for decryption.");
+}
+
+scanner.close();
+}
+}
